@@ -46,3 +46,36 @@ An autonomous conversational agent built on LangChain components inside n8n:
 - **Tool Calling**:
   - `GetCustomers`: Queries customer profiles from n8n internal Data Tables.
   - `GetOrderData`: Interacts with live order database via authenticated HTTP header tool requests.
+
+---
+
+## 🚀 How to Import and Run in n8n
+
+### Option A: Via n8n Graphical Interface
+1. Open your n8n instance (Cloud or Self-Hosted).
+2. Go to **Workflows** > **Add Workflow**.
+3. Click the `...` (options menu) in the top-right corner.
+4. Select **Import from File...** and choose any `.json` workflow file from this repository.
+5. Alternatively, copy the raw JSON content and paste it directly onto the n8n canvas using `Ctrl + V` (`Cmd + V` on Mac).
+
+### Option B: Via n8n CLI
+```bash
+# Import a specific workflow
+n8n import:workflow --input="./Section 2 - Sales Data Pipeline.json"
+
+# Import all workflows in batch
+for %f in (*.json) do n8n import:workflow --input="%f"
+```
+
+---
+
+## 🔑 Required Credentials & Configuration
+
+When importing these workflows, configure the following credentials within n8n:
+
+| Credential Type | Workflows Used | Description |
+| :--- | :--- | :--- |
+| **Google Gemini (PaLM) API** | `My workflow.json` | API key from Google AI Studio for Gemini chat completion. |
+| **Discord Webhook** | `Monitor Report Errors.json` | Channel webhook URL for automated incident notification. |
+| **HTTP Header Auth** | `My workflow.json`, `Section 2` | Custom assessment / API tokens for data retrieval endpoints. |
+| **n8n Internal Data Tables** | `Nathan's Workflow`, `Merging Data`, `Generating Reports` | Data Table schemas for `Orders` and `Customers`. |
