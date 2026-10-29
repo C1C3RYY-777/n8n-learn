@@ -1,0 +1,188 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        0,
+        0
+      ],
+      "id": "05df4e2f-a8bd-4aec-917f-b6e0eebb16df",
+      "name": "to write a messaage",
+      "webhookId": "b889c7b7-0178-4be2-83ea-5d92809b58c4"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a customer service agent. You have access to a customer database and an order database.\n\nWhen asked about customers, use the GetCustomers tool to look up their information.\nWhen asked about orders, prices, employees, or product categories, use the GetOrderData tool.\n\nBe concise and helpful. If the data does not contain what the user is asking for, say so. Do not make up information."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "c962b594-0f60-488e-8f0f-4591d8506dcf",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        80,
+        176
+      ],
+      "id": "2dfec9b2-3684-4f18-94b3-2a1d875c8934",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "3pJufXTG0oxE9vKg",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        272,
+        192
+      ],
+      "id": "a25990a0-2faa-4254-81c3-41b7360da3cc",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "hlUYiWbtLpI2naZn",
+          "mode": "list",
+          "cachedResultName": "customers",
+          "cachedResultUrl": "/projects/7m49TqY6tXaJG2Sm/datatables/hlUYiWbtLpI2naZn"
+        }
+      },
+      "type": "n8n-nodes-base.dataTableTool",
+      "typeVersion": 1.1,
+      "position": [
+        640,
+        176
+      ],
+      "id": "024cbc32-d881-44c4-a7a2-37a53e81383b",
+      "name": "GetCustomers"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Retrieve order details including order prices, quantities, product categories, employee assignments, and order statuses for all customers",
+        "url": "https://learn.app.n8n.cloud/webhook/courses/n8n-quickstart/order-tool",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Assessment-ID ",
+              "value": "0b204917ac093ac2c3db965ba9ddba46"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.5,
+      "position": [
+        480,
+        192
+      ],
+      "id": "de5d7171-ffd3-4a7e-b955-fe58de3e9034",
+      "name": "GetOrderData.",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "0jTLHrSVB4lmo3KB",
+          "name": "Header Auth account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "to write a messaage": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GetCustomers": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GetOrderData.": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "549de8b1-f0bc-4355-a13a-7e28817518e6",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "96d190966a50ee81569839f3c11ecf936fe29f24a8ecb72651027c4db44d8e75"
+  },
+  "nodeGroups": [],
+  "id": "3v2kwFU1fmE00quS",
+  "tags": []
+}
