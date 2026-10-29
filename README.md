@@ -79,3 +79,32 @@ When importing these workflows, configure the following credentials within n8n:
 | **Discord Webhook** | `Monitor Report Errors.json` | Channel webhook URL for automated incident notification. |
 | **HTTP Header Auth** | `My workflow.json`, `Section 2` | Custom assessment / API tokens for data retrieval endpoints. |
 | **n8n Internal Data Tables** | `Nathan's Workflow`, `Merging Data`, `Generating Reports` | Data Table schemas for `Orders` and `Customers`. |
+
+---
+
+## 🗺️ Learning Milestones & Roadmap
+
+- [x] **Foundations**: Core n8n interface, execution triggers, data tables.
+- [x] **Data Manipulation**: Merging sources, aggregation, data filtering, and formatting.
+- [x] **Advanced Pipelines**: End-to-end sales processing, CSV transformations, automated reporting.
+- [x] **Error Handling & Resiliency**: Error triggers, webhook alerts, and exception handling.
+- [x] **AI & Autonomous Agents**: LangChain integration, LLM tool-calling, window memory buffers.
+- [ ] **Sub-workflows & Webhooks**: Modular multi-workflow orchestration.
+- [ ] **Custom Community Nodes**: Extending n8n capabilities with custom TypeScript nodes.
+
+---
+
+## 📁 Repository Structure
+
+```text
+n8n-learn/
+├── assets/
+│   └── {E4DEFB35-F8A0-459C-82D2-007BE8129497}.png  # Workflow screenshots & diagrams
+├── Generating Reports.json                          # Customer report generation workflow
+├── Merging Data.json                                # Multi-source data merging workflow
+├── Monitor Report Errors.json                       # Global error monitoring & Discord alerts
+├── My workflow.json                                 # AI Support Agent (LangChain + Gemini)
+├── Nathan's Workflow.json                           # Order upsert & warehouse workflow
+├── Section 2 - Sales Data Pipeline.json             # Sales ETL pipeline & CSV report generator
+└── README.md                                        # Project documentation & workflows guide
+```
