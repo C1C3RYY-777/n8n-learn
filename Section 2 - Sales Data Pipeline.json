@@ -1,0 +1,2202 @@
+{
+  "name": "Section 2 - Sales Data Pipeline",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -208,
+        112
+      ],
+      "id": "8566ac37-a349-497c-95a8-ce48568f641d",
+      "name": "TriggerManual"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "orders",
+        "include": "allFieldsExcept",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        800,
+        352
+      ],
+      "id": "ac5652e8-af58-4b25-a1eb-ab85f338a1c3",
+      "name": "AggregateOrders"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ee08b77c-6595-4e76-b6f8-9135340c5ad4",
+              "name": "order_id ",
+              "value": "={{$json.order_id}}",
+              "type": "string"
+            },
+            {
+              "id": "8e4f1df7-0f45-4f6d-98d7-858681d3bfe2",
+              "name": "customer_name",
+              "value": "={{ $json.customer_name }}",
+              "type": "string"
+            },
+            {
+              "id": "0e37a5d4-c9a9-4da7-8a63-fd71da70a70b",
+              "name": "region ",
+              "value": "={{ $json.region }}",
+              "type": "string"
+            },
+            {
+              "id": "5abeadf8-04d0-425a-be3d-46021276d93f",
+              "name": "status ",
+              "value": "={{ $json.status }}",
+              "type": "string"
+            },
+            {
+              "id": "34ca17a6-a2a3-4464-a394-93bf7b24104c",
+              "name": "order_total ",
+              "value": "={{ $json.quantity * $json.unit_price }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        464,
+        112
+      ],
+      "id": "33a0eb90-eee7-4420-ac5f-4ddf5bc7b9d5",
+      "name": "SetOrderTotals"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://learn.app.n8n.cloud/webhook/course/n8n101/process-orders",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Assessment-ID",
+              "value": "0b204917ac093ac2c3db965ba9ddba46"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "orders",
+              "value": "={{ $json.orders }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        976,
+        352
+      ],
+      "id": "8543d41a-4b19-4f58-972b-80a430de41c8",
+      "name": "SendOrders",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "31apQYGPq81WW33E",
+          "name": "n8n Academy API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://learn.app.n8n.cloud/webhook/course/n8n101/sales-data",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Assessment-ID",
+              "value": "0b204917ac093ac2c3db965ba9ddba46"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        16,
+        112
+      ],
+      "id": "d7aa4955-37a2-4ff1-9a1e-6b20ea398f39",
+      "name": "GetSalesData",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "31apQYGPq81WW33E",
+          "name": "n8n Academy API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "orders",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        240,
+        112
+      ],
+      "id": "edd6c9c2-1862-4de9-9627-37715e1c3c60",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "19984e8a-c834-41f4-9689-1b01ffb91f65",
+              "leftValue": "={{ $json['status '] }}",
+              "rightValue": "delivered",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        672,
+        16
+      ],
+      "id": "9f55ef9d-c825-48e7-ab97-8ea3ffc173e3",
+      "name": "FilterDelivered"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://learn.app.n8n.cloud/webhook/course/n8n101/validate-analysis",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Assessment-ID",
+              "value": "0b204917ac093ac2c3db965ba9ddba46"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "regions",
+              "value": "={{ $json.regions }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1648,
+        -192
+      ],
+      "id": "afe67c81-b2ac-4935-bd9d-b9f94655eacb",
+      "name": "SendAnalysis",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "31apQYGPq81WW33E",
+          "name": "n8n Academy API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldsToSummarize": {
+          "values": [
+            {
+              "aggregation": "sum",
+              "field": "order_total "
+            },
+            {
+              "field": "order_total "
+            },
+            {
+              "aggregation": "average",
+              "field": "order_total "
+            }
+          ]
+        },
+        "fieldsToSplitBy": "={{ $json['region '] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.summarize",
+      "typeVersion": 1.1,
+      "position": [
+        928,
+        -96
+      ],
+      "id": "c0da391f-4d79-4c70-816c-8d0eeb7b2dbe",
+      "name": "Summarize"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "regions",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1392,
+        -192
+      ],
+      "id": "6feb8fdd-efca-4d1d-9822-a5ac88e0f5b9",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "keys": {
+          "key": [
+            {
+              "currentKey": "sum_order_total_",
+              "newKey": "order_totals"
+            },
+            {
+              "currentKey": "count_order_total_",
+              "newKey": "order_count"
+            },
+            {
+              "currentKey": "average_order_total_",
+              "newKey": "average_order_total"
+            }
+          ]
+        },
+        "additionalOptions": {}
+      },
+      "type": "n8n-nodes-base.renameKeys",
+      "typeVersion": 1,
+      "position": [
+        1136,
+        -96
+      ],
+      "id": "b43a6908-8f20-49d1-9694-40147e41bcf7",
+      "name": "UpdateFieldNames"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c2027cfa-c331-4b3e-ab5c-4bddd20d2750",
+              "name": "report_generated",
+              "value": "={{ $now.format('yyyy-MM-dd HH:mm:ss') }}",
+              "type": "string"
+            },
+            {
+              "id": "9445ccf8-1282-4951-931a-e8dc7e25a1ac",
+              "name": "assessment_id",
+              "value": "0b204917ac093ac2c3db965ba9ddba46",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1392,
+        16
+      ],
+      "id": "8912716f-f0b7-41b0-b85c-209ea1956e11",
+      "name": "SetReportMetadata"
+    },
+    {
+      "parameters": {
+        "binaryPropertyName": "report",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        1600,
+        16
+      ],
+      "id": "0c92fa21-5894-4ffb-ad63-ad04e9ada29c",
+      "name": "ConvertToCSV"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://learn.app.n8n.cloud/webhook/course/n8n101/send-report",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Assessment-ID",
+              "value": "0b204917ac093ac2c3db965ba9ddba46"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "report",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1792,
+        16
+      ],
+      "id": "ecae98d2-b632-41ff-b2bf-6fe2ff466ce5",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "31apQYGPq81WW33E",
+          "name": "n8n Academy API Key"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        896,
+        112
+      ],
+      "id": "f6c9b087-cec7-4b68-97e8-5b938f134316",
+      "name": "IgnoreNonDelivered"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1056,
+        128
+      ],
+      "id": "491b23cd-478a-470a-82c8-02e58c6b3b7a",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {
+    "AggregateOrders": [
+      {
+        "json": {
+          "orders": [
+            {
+              "order_id": "ORD-001",
+              "customer_name": "Acme Corp",
+              "region": "north",
+              "status": "delivered",
+              "order_total": 598
+            },
+            {
+              "order_id": "ORD-002",
+              "customer_name": "TechStart Inc",
+              "region": "west",
+              "status": "shipped",
+              "order_total": 245
+            },
+            {
+              "order_id": "ORD-003",
+              "customer_name": "Global Systems",
+              "region": "south",
+              "status": "processing",
+              "order_total": 149
+            },
+            {
+              "order_id": "ORD-004",
+              "customer_name": "Acme Corp",
+              "region": "north",
+              "status": "delivered",
+              "order_total": 99
+            },
+            {
+              "order_id": "ORD-005",
+              "customer_name": "DataFlow Ltd",
+              "region": "east",
+              "status": "pending",
+              "order_total": 299
+            },
+            {
+              "order_id": "ORD-006",
+              "customer_name": "CloudNine Solutions",
+              "region": "west",
+              "status": "shipped",
+              "order_total": 447
+            },
+            {
+              "order_id": "ORD-007",
+              "customer_name": "Bright Ideas Co",
+              "region": "north",
+              "status": "delivered",
+              "order_total": 490
+            },
+            {
+              "order_id ": "ORD-008",
+              "customer_name": "Summit Enterprises",
+              "region": "north",
+              "status": "processing",
+              "order_total": 1495
+            },
+            {
+              "order_id": "ORD-009",
+              "customer_nam": "TechStart Inc",
+              "region": "west",
+              "status": "delivered",
+              "order_total": 79
+            },
+            {
+              "order_id": "ORD-010",
+              "customer_name": "Innovate LLC",
+              "region": "east",
+              "status": "shipped",
+              "order_total": 298
+            },
+            {
+              "order_id": "ORD-011",
+              "customer_name": "Pioneer Tech",
+              "region": "south",
+              "status": "pending",
+              "order_total": 49
+            },
+            {
+              "order_id": "ORD-012",
+              "customer_name": "Nexus Industries",
+              "region": "north",
+              "status": "delivered",
+              "order_total": 897
+            },
+            {
+              "order_id": "ORD-013",
+              "customer_name": "Global Systems",
+              "region": "south",
+              "status": "shipped",
+              "order_total": 99
+            },
+            {
+              "order_id": "ORD-014",
+              "customer_name": "DataFlow Ltd",
+              "region": "east",
+              "status": "processing",
+              "order_total ": 149
+            },
+            {
+              "order_id": "ORD-015",
+              "customer_name": "CloudNine Solutions",
+              "region": "west",
+              "status": "delivered",
+              "order_total ": 98
+            },
+            {
+              "order_id": "ORD-016",
+              "customer_name": "Acme Corp",
+              "region": "north",
+              "status": "shipped",
+              "order_total ": 149
+            },
+            {
+              "order_id": "ORD-017",
+              "customer_name": "Bright Ideas Co",
+              "region": "south",
+              "status": "pending",
+              "order_total ": 299
+            },
+            {
+              "order_id": "ORD-018",
+              "customer_name": "Summit Enterprises",
+              "region": "north",
+              "status": "delivered",
+              "order_total": 158
+            },
+            {
+              "order_id": "ORD-019",
+              "customer_name": "Innovate LLC",
+              "region": "east",
+              "status": "shipped",
+              "order_total": 196
+            },
+            {
+              "order_id": "ORD-020",
+              "customer_name": "Pioneer Tech",
+              "region": "south",
+              "status": "processing",
+              "order_total": 149
+            },
+            {
+              "order_id": "ORD-021",
+              "customer_name": "Nexus Industries",
+              "region": "north",
+              "status": "delivered",
+              "order_total ": 294
+            },
+            {
+              "order_id": "ORD-022",
+              "customer_name": "TechStart Inc",
+              "region": "west",
+              "status": "shipped",
+              "order_total ": 299
+            },
+            {
+              "order_id": "ORD-023",
+              "customer_name": "Global Systems",
+              "region": "south",
+              "status": "pending",
+              "order_total ": 79
+            },
+            {
+              "order_id": "ORD-024",
+              "customer_name": "DataFlow Ltd",
+              "region": "east",
+              "status": "delivered",
+              "order_total ": 147
+            },
+            {
+              "order_id": "ORD-025",
+              "customer_name": "CloudNine Solutions",
+              "region": "west",
+              "status": "processing",
+              "order_total": 598
+            },
+            {
+              "order_id": "ORD-026",
+              "customer_name": "Bright Ideas Co",
+              "region": "south",
+              "status": "shipped",
+              "order_total": 149
+            },
+            {
+              "order_id": "ORD-027",
+              "customer_name": "Summit Enterprises",
+              "region": "north",
+              "status": "delivered",
+              "order_total": 98
+            },
+            {
+              "order_id": "ORD-028",
+              "customer_name": "Innovate LLC",
+              "region": "east",
+              "status": "pending",
+              "order_total": 99
+            },
+            {
+              "order_id": "ORD-029",
+              "customer_name": "Pioneer Tech",
+              "region": "south",
+              "status": "shipped",
+              "order_total": 299
+            },
+            {
+              "order_id": "ORD-030",
+              "customer_name": "Nexus Industries",
+              "region": "north",
+              "status": "delivered",
+              "order_total": 298
+            },
+            {
+              "order_id": "ORD-031",
+              "customer_name": "Acme Corp",
+              "region": "north",
+              "status": "processing",
+              "order_total": 49
+            },
+            {
+              "order_id": "ORD-032",
+              "customer_name": "TechStart Inc",
+              "region": "west",
+              "status": "shipped",
+              "order_total": 298
+            },
+            {
+              "order_id": "ORD-033",
+              "customer_name": "Global Systems",
+              "region": "south",
+              "status": "delivered",
+              "order_total": 299
+            },
+            {
+              "order_id": "ORD-034",
+              "customer_name": "DataFlow Ltd",
+              "region": "east",
+              "status": "pending",
+              "order_total": 99
+            },
+            {
+              "order_id": "ORD-035",
+              "customer_name": "CloudNine Solutions",
+              "region": "west",
+              "status": "shipped",
+              "order_total": 245
+            },
+            {
+              "order_id": "ORD-036",
+              "customer_name": "Bright Ideas Co",
+              "region": "south",
+              "status": "delivered",
+              "order_total": 79
+            },
+            {
+              "order_id": "ORD-037",
+              "customer_name": "Summit Enterprises",
+              "region": "north",
+              "status": "processing",
+              "order_total": 149
+            },
+            {
+              "order_id": "ORD-038",
+              "customer_name": "Innovate LLC",
+              "region": "east",
+              "status": "shipped",
+              "order_total": 299
+            },
+            {
+              "order_id": "ORD-039",
+              "customer_name": "Pioneer Tech",
+              "region": "south",
+              "status": "delivered",
+              "order_total": 158
+            },
+            {
+              "order_id": "ORD-040",
+              "customer_name": "Nexus Industries",
+              "region": "north",
+              "status": "pending",
+              "order_total": 49
+            },
+            {
+              "order_id": "ORD-041",
+              "customer_name": "Acme Corp",
+              "region": "north",
+              "status": "shipped",
+              "order_total": 79
+            },
+            {
+              "order_id": "ORD-042",
+              "customer_name": "TechStart Inc",
+              "region": "west",
+              "status": "delivered",
+              "order_total": 99
+            },
+            {
+              "order_id": "ORD-043",
+              "customer_name": "Global Systems",
+              "region": "south",
+              "status": "processing",
+              "order_total": 98
+            },
+            {
+              "order_id": "ORD-044",
+              "customer_name": "DataFlow Ltd",
+              "region": "east",
+              "status": "shipped",
+              "order_total": 598
+            },
+            {
+              "order_id": "ORD-045",
+              "customer_name": "CloudNine Solutions",
+              "region": "west",
+              "status": "delivered",
+              "order_total": 99
+            },
+            {
+              "order_id": "ORD-046",
+              "customer_name": "Bright Ideas Co",
+              "region": "south",
+              "status": "pending",
+              "order_total": 298
+            },
+            {
+              "order_id": "ORD-047",
+              "customer_name": "Summit Enterprises",
+              "region": "north",
+              "status": "shipped",
+              "order_total": 147
+            },
+            {
+              "order_id": "ORD-048",
+              "customer_name": "Innovate LLC",
+              "region": "east",
+              "status": "delivered",
+              "order_total": 79
+            },
+            {
+              "order_id": "ORD-049",
+              "customer_name": "Pioneer Tech",
+              "region": "south",
+              "status": "processing",
+              "order_total": 149
+            },
+            {
+              "order_id": "ORD-050",
+              "customer_name": "Nexus Industries",
+              "region": "north",
+              "status": "shipped",
+              "order_total": 299
+            }
+          ]
+        }
+      }
+    ],
+    "GetSalesData": [
+      {
+        "json": {
+          "orders": [
+            {
+              "order_id": "ORD-001",
+              "customer_name": "Acme Corp",
+              "customer_email": "orders@acme.example",
+              "product": "Enterprise License",
+              "quantity": 2,
+              "unit_price": 299,
+              "order_date": "2026-01-04T23:00:00.000Z",
+              "status": "delivered",
+              "region": "north"
+            },
+            {
+              "order_id": "ORD-002",
+              "customer_name": "TechStart Inc",
+              "customer_email": "billing@techstart.example",
+              "product": "Starter Plan",
+              "quantity": 5,
+              "unit_price": 49,
+              "order_date": "2026-01-05T23:00:00.000Z",
+              "status": "shipped",
+              "region": "west"
+            },
+            {
+              "order_id": "ORD-003",
+              "customer_name": "Global Systems",
+              "customer_email": "purchasing@globalsys.example",
+              "product": "Professional Plan",
+              "quantity": 1,
+              "unit_price": 149,
+              "order_date": "2026-01-05T23:00:00.000Z",
+              "status": "processing",
+              "region": "south"
+            },
+            {
+              "order_id": "ORD-004",
+              "customer_name": "Acme Corp",
+              "customer_email": "orders@acme.example",
+              "product": "Add-on: Priority Support",
+              "quantity": 1,
+              "unit_price": 99,
+              "order_date": "2026-01-06T23:00:00.000Z",
+              "status": "delivered",
+              "region": "north"
+            },
+            {
+              "order_id": "ORD-005",
+              "customer_name": "DataFlow Ltd",
+              "customer_email": "admin@dataflow.example",
+              "product": "Enterprise License",
+              "quantity": 1,
+              "unit_price": 299,
+              "order_date": "2026-01-06T23:00:00.000Z",
+              "status": "pending",
+              "region": "east"
+            },
+            {
+              "order_id": "ORD-006",
+              "customer_name": "CloudNine Solutions",
+              "customer_email": "info@cloudnine.example",
+              "product": "Professional Plan",
+              "quantity": 3,
+              "unit_price": 149,
+              "order_date": "2026-01-07T23:00:00.000Z",
+              "status": "shipped",
+              "region": "west"
+            },
+            {
+              "order_id": "ORD-007",
+              "customer_name": "Bright Ideas Co",
+              "customer_email": "hello@brightideas.example",
+              "product": "Starter Plan",
+              "quantity": 10,
+              "unit_price": 49,
+              "order_date": "2026-01-07T23:00:00.000Z",
+              "status": "delivered",
+              "region": "north"
+            },
+            {
+              "order_id": "ORD-008",
+              "customer_name": "Summit Enterprises",
+              "customer_email": "procurement@summit.example",
+              "product": "Enterprise License",
+              "quantity": 5,
+              "unit_price": 299,
+              "order_date": "2026-01-08T23:00:00.000Z",
+              "status": "processing",
+              "region": "north"
+            },
+            {
+              "order_id": "ORD-009",
+              "customer_name": "TechStart Inc",
+              "customer_email": "billing@techstart.example",
+              "product": "Add-on: API Access",
+              "quantity": 1,
+              "unit_price": 79,
+              "order_date": "2026-01-08T23:00:00.000Z",
+              "status": "delivered",
+              "region": "west"
+            },
+            {
+              "order_id": "ORD-010",
+              "customer_name": "Innovate LLC",
+              "customer_email": "orders@innovate.example",
+              "product": "Professional Plan",
+              "quantity": 2,
+              "unit_price": 149,
+              "order_date": "2026-01-09T23:00:00.000Z",
+              "status": "shipped",
+              "region": "east"
+            },
+            {
+              "order_id": "ORD-011",
+              "customer_name": "Pioneer Tech",
+              "customer_email": "buying@pioneer.example",
+              "product": "Starter Plan",
+              "quantity": 1,
+              "unit_price": 49,
+              "order_date": "2026-01-09T23:00:00.000Z",
+              "status": "pending",
+              "region": "south"
+            },
+            {
+              "order_id": "ORD-012",
+              "customer_name": "Nexus Industries",
+              "customer_email": "accounts@nexus.example",
+              "product": "Enterprise License",
+              "quantity": 3,
+              "unit_price": 299,
+              "order_date": "2026-01-10T23:00:00.000Z",
+              "status": "delivered",
+              "region": "north"
+            },
+            {
+              "order_id": "ORD-013",
+              "customer_name": "Global Systems",
+              "customer_email": "purchasing@globalsys.example",
+              "product": "Add-on: Priority Support",
+              "quantity": 1,
+              "unit_price": 99,
+              "order_date": "2026-01-10T23:00:00.000Z",
+              "status": "shipped",
+              "region": "south"
+            },
+            {
+              "order_id": "ORD-014",
+              "customer_name": "DataFlow Ltd",
+              "customer_email": "admin@dataflow.example",
+              "product": "Professional Plan",
+              "quantity": 1,
+              "unit_price": 149,
+              "order_date": "2026-01-11T23:00:00.000Z",
+              "status": "processing",
+              "region": "east"
+            },
+            {
+              "order_id": "ORD-015",
+              "customer_name": "CloudNine Solutions",
+              "customer_email": "info@cloudnine.example",
+              "product": "Starter Plan",
+              "quantity": 2,
+              "unit_price": 49,
+              "order_date": "2026-01-11T23:00:00.000Z",
+              "status": "delivered",
+              "region": "west"
+            },
+            {
+              "order_id": "ORD-016",
+              "customer_name": "Acme Corp",
+              "customer_email": "orders@acme.example",
+              "product": "Professional Plan",
+              "quantity": 1,
+              "unit_price": 149,
+              "order_date": "2026-01-12T23:00:00.000Z",
+              "status": "shipped",
+              "region": "north"
+            },
+            {
+              "order_id": "ORD-017",
+              "customer_name": "Bright Ideas Co",
+              "customer_email": "hello@brightideas.example",
+              "product": "Enterprise License",
+              "quantity": 1,
+              "unit_price": 299,
+              "order_date": "2026-01-12T23:00:00.000Z",
+              "status": "pending",
+              "region": "south"
+            },
+            {
+              "order_id": "ORD-018",
+              "customer_name": "Summit Enterprises",
+              "customer_email": "procurement@summit.example",
+              "product": "Add-on: API Access",
+              "quantity": 2,
+              "unit_price": 79,
+              "order_date": "2026-01-13T23:00:00.000Z",
+              "status": "delivered",
+              "region": "north"
+            },
+            {
+              "order_id": "ORD-019",
+              "customer_name": "Innovate LLC",
+              "customer_email": "orders@innovate.example",
+              "product": "Starter Plan",
+              "quantity": 4,
+              "unit_price": 49,
+              "order_date": "2026-01-13T23:00:00.000Z",
+              "status": "shipped",
+              "region": "east"
+            },
+            {
+              "order_id": "ORD-020",
+              "customer_name": "Pioneer Tech",
+              "customer_email": "buying@pioneer.example",
+              "product": "Professional Plan",
+              "quantity": 1,
+              "unit_price": 149,
+              "order_date": "2026-01-14T23:00:00.000Z",
+              "status": "processing",
+              "region": "south"
+            },
+            {
+              "order_id": "ORD-021",
+              "customer_name": "Nexus Industries",
+              "customer_email": "accounts@nexus.example",
+              "product": "Starter Plan",
+              "quantity": 6,
+              "unit_price": 49,
+              "order_date": "2026-01-14T23:00:00.000Z",
+              "status": "delivered",
+              "region": "north"
+            },
+            {
+              "order_id": "ORD-022",
+              "customer_name": "TechStart Inc",
+              "customer_email": "billing@techstart.example",
+              "product": "Enterprise License",
+              "quantity": 1,
+              "unit_price": 299,
+              "order_date": "2026-01-15T23:00:00.000Z",
+              "status": "shipped",
+              "region": "west"
+            },
+            {
+              "order_id": "ORD-023",
+              "customer_name": "Global Systems",
+              "customer_email": "purchasing@globalsys.example",
+              "product": "Add-on: API Access",
+              "quantity": 1,
+              "unit_price": 79,
+              "order_date": "2026-01-15T23:00:00.000Z",
+              "status": "pending",
+              "region": "south"
+            },
+            {
+              "order_id": "ORD-024",
+              "customer_name": "DataFlow Ltd",
+              "customer_email": "admin@dataflow.example",
+              "product": "Starter Plan",
+              "quantity": 3,
+              "unit_price": 49,
+              "order_date": "2026-01-16T23:00:00.000Z",
+              "status": "delivered",
+              "region": "east"
+            },
+            {
+              "order_id": "ORD-025",
+              "customer_name": "CloudNine Solutions",
+              "customer_email": "info@cloudnine.example",
+              "product": "Enterprise License",
+              "quantity": 2,
+              "unit_price": 299,
+              "order_date": "2026-01-16T23:00:00.000Z",
+              "status": "processing",
+              "region": "west"
+            },
+            {
+              "order_id": "ORD-026",
+              "customer_name": "Bright Ideas Co",
+              "customer_email": "hello@brightideas.example",
+              "product": "Professional Plan",
+              "quantity": 1,
+              "unit_price": 149,
+              "order_date": "2026-01-17T23:00:00.000Z",
+              "status": "shipped",
+              "region": "south"
+            },
+            {
+              "order_id": "ORD-027",
+              "customer_name": "Summit Enterprises",
+              "customer_email": "procurement@summit.example",
+              "product": "Starter Plan",
+              "quantity": 2,
+              "unit_price": 49,
+              "order_date": "2026-01-17T23:00:00.000Z",
+              "status": "delivered",
+              "region": "north"
+            },
+            {
+              "order_id": "ORD-028",
+              "customer_name": "Innovate LLC",
+              "customer_email": "orders@innovate.example",
+              "product": "Add-on: Priority Support",
+              "quantity": 1,
+              "unit_price": 99,
+              "order_date": "2026-01-18T23:00:00.000Z",
+              "status": "pending",
+              "region": "east"
+            },
+            {
+              "order_id": "ORD-029",
+              "customer_name": "Pioneer Tech",
+              "customer_email": "buying@pioneer.example",
+              "product": "Enterprise License",
+              "quantity": 1,
+              "unit_price": 299,
+              "order_date": "2026-01-18T23:00:00.000Z",
+              "status": "shipped",
+              "region": "south"
+            },
+            {
+              "order_id": "ORD-030",
+              "customer_name": "Nexus Industries",
+              "customer_email": "accounts@nexus.example",
+              "product": "Professional Plan",
+              "quantity": 2,
+              "unit_price": 149,
+              "order_date": "2026-01-19T23:00:00.000Z",
+              "status": "delivered",
+              "region": "north"
+            },
+            {
+              "order_id": "ORD-031",
+              "customer_name": "Acme Corp",
+              "customer_email": "orders@acme.example",
+              "product": "Starter Plan",
+              "quantity": 1,
+              "unit_price": 49,
+              "order_date": "2026-01-19T23:00:00.000Z",
+              "status": "processing",
+              "region": "north"
+            },
+            {
+              "order_id": "ORD-032",
+              "customer_name": "TechStart Inc",
+              "customer_email": "billing@techstart.example",
+              "product": "Professional Plan",
+              "quantity": 2,
+              "unit_price": 149,
+              "order_date": "2026-01-20T23:00:00.000Z",
+              "status": "shipped",
+              "region": "west"
+            },
+            {
+              "order_id": "ORD-033",
+              "customer_name": "Global Systems",
+              "customer_email": "purchasing@globalsys.example",
+              "product": "Enterprise License",
+              "quantity": 1,
+              "unit_price": 299,
+              "order_date": "2026-01-20T23:00:00.000Z",
+              "status": "delivered",
+              "region": "south"
+            },
+            {
+              "order_id": "ORD-034",
+              "customer_name": "DataFlow Ltd",
+              "customer_email": "admin@dataflow.example",
+              "product": "Add-on: Priority Support",
+              "quantity": 1,
+              "unit_price": 99,
+              "order_date": "2026-01-21T23:00:00.000Z",
+              "status": "pending",
+              "region": "east"
+            },
+            {
+              "order_id": "ORD-035",
+              "customer_name": "CloudNine Solutions",
+              "customer_email": "info@cloudnine.example",
+              "product": "Starter Plan",
+              "quantity": 5,
+              "unit_price": 49,
+              "order_date": "2026-01-21T23:00:00.000Z",
+              "status": "shipped",
+              "region": "west"
+            },
+            {
+              "order_id": "ORD-036",
+              "customer_name": "Bright Ideas Co",
+              "customer_email": "hello@brightideas.example",
+              "product": "Add-on: API Access",
+              "quantity": 1,
+              "unit_price": 79,
+              "order_date": "2026-01-22T23:00:00.000Z",
+              "status": "delivered",
+              "region": "south"
+            },
+            {
+              "order_id": "ORD-037",
+              "customer_name": "Summit Enterprises",
+              "customer_email": "procurement@summit.example",
+              "product": "Professional Plan",
+              "quantity": 1,
+              "unit_price": 149,
+              "order_date": "2026-01-22T23:00:00.000Z",
+              "status": "processing",
+              "region": "north"
+            },
+            {
+              "order_id": "ORD-038",
+              "customer_name": "Innovate LLC",
+              "customer_email": "orders@innovate.example",
+              "product": "Enterprise License",
+              "quantity": 1,
+              "unit_price": 299,
+              "order_date": "2026-01-23T23:00:00.000Z",
+              "status": "shipped",
+              "region": "east"
+            },
+            {
+              "order_id": "ORD-039",
+              "customer_name": "Pioneer Tech",
+              "customer_email": "buying@pioneer.example",
+              "product": "Add-on: API Access",
+              "quantity": 2,
+              "unit_price": 79,
+              "order_date": "2026-01-23T23:00:00.000Z",
+              "status": "delivered",
+              "region": "south"
+            },
+            {
+              "order_id": "ORD-040",
+              "customer_name": "Nexus Industries",
+              "customer_email": "accounts@nexus.example",
+              "product": "Starter Plan",
+              "quantity": 1,
+              "unit_price": 49,
+              "order_date": "2026-01-24T23:00:00.000Z",
+              "status": "pending",
+              "region": "north"
+            },
+            {
+              "order_id": "ORD-041",
+              "customer_name": "Acme Corp",
+              "customer_email": "orders@acme.example",
+              "product": "Add-on: API Access",
+              "quantity": 1,
+              "unit_price": 79,
+              "order_date": "2026-01-24T23:00:00.000Z",
+              "status": "shipped",
+              "region": "north"
+            },
+            {
+              "order_id": "ORD-042",
+              "customer_name": "TechStart Inc",
+              "customer_email": "billing@techstart.example",
+              "product": "Add-on: Priority Support",
+              "quantity": 1,
+              "unit_price": 99,
+              "order_date": "2026-01-25T23:00:00.000Z",
+              "status": "delivered",
+              "region": "west"
+            },
+            {
+              "order_id": "ORD-043",
+              "customer_name": "Global Systems",
+              "customer_email": "purchasing@globalsys.example",
+              "product": "Starter Plan",
+              "quantity": 2,
+              "unit_price": 49,
+              "order_date": "2026-01-25T23:00:00.000Z",
+              "status": "processing",
+              "region": "south"
+            },
+            {
+              "order_id": "ORD-044",
+              "customer_name": "DataFlow Ltd",
+              "customer_email": "admin@dataflow.example",
+              "product": "Enterprise License",
+              "quantity": 2,
+              "unit_price": 299,
+              "order_date": "2026-01-26T23:00:00.000Z",
+              "status": "shipped",
+              "region": "east"
+            },
+            {
+              "order_id": "ORD-045",
+              "customer_name": "CloudNine Solutions",
+              "customer_email": "info@cloudnine.example",
+              "product": "Add-on: Priority Support",
+              "quantity": 1,
+              "unit_price": 99,
+              "order_date": "2026-01-26T23:00:00.000Z",
+              "status": "delivered",
+              "region": "west"
+            },
+            {
+              "order_id": "ORD-046",
+              "customer_name": "Bright Ideas Co",
+              "customer_email": "hello@brightideas.example",
+              "product": "Professional Plan",
+              "quantity": 2,
+              "unit_price": 149,
+              "order_date": "2026-01-27T23:00:00.000Z",
+              "status": "pending",
+              "region": "south"
+            },
+            {
+              "order_id": "ORD-047",
+              "customer_name": "Summit Enterprises",
+              "customer_email": "procurement@summit.example",
+              "product": "Starter Plan",
+              "quantity": 3,
+              "unit_price": 49,
+              "order_date": "2026-01-27T23:00:00.000Z",
+              "status": "shipped",
+              "region": "north"
+            },
+            {
+              "order_id": "ORD-048",
+              "customer_name": "Innovate LLC",
+              "customer_email": "orders@innovate.example",
+              "product": "Add-on: API Access",
+              "quantity": 1,
+              "unit_price": 79,
+              "order_date": "2026-01-28T23:00:00.000Z",
+              "status": "delivered",
+              "region": "east"
+            },
+            {
+              "order_id": "ORD-049",
+              "customer_name": "Pioneer Tech",
+              "customer_email": "buying@pioneer.example",
+              "product": "Professional Plan",
+              "quantity": 1,
+              "unit_price": 149,
+              "order_date": "2026-01-28T23:00:00.000Z",
+              "status": "processing",
+              "region": "south"
+            },
+            {
+              "order_id": "ORD-050",
+              "customer_name": "Nexus Industries",
+              "customer_email": "accounts@nexus.example",
+              "product": "Enterprise License",
+              "quantity": 1,
+              "unit_price": 299,
+              "order_date": "2026-01-29T23:00:00.000Z",
+              "status": "shipped",
+              "region": "north"
+            }
+          ],
+          "generated_at": "2026-10-27T22:43:05.570+01:00",
+          "total_records": 50
+        }
+      }
+    ],
+    "Split Out": [
+      {
+        "json": {
+          "order_id": "ORD-001",
+          "customer_name": "Acme Corp",
+          "customer_email": "orders@acme.example",
+          "product": "Enterprise License",
+          "quantity": 2,
+          "unit_price": 299,
+          "order_date": "2026-01-04T23:00:00.000Z",
+          "status": "delivered",
+          "region": "north"
+        }
+      },
+      {
+        "json": {
+          "order_id": "ORD-002",
+          "customer_name": "TechStart Inc",
+          "customer_email": "billing@techstart.example",
+          "product": "Starter Plan",
+          "quantity": 5,
+          "unit_price": 49,
+          "order_date": "2026-01-05T23:00:00.000Z",
+          "status": "shipped",
+          "region": "west"
+        }
+      },
+      {
+        "json": {
+          "order_id": "ORD-003",
+          "customer_name": "Global Systems",
+          "customer_email": "purchasing@globalsys.example",
+          "product": "Professional Plan",
+          "quantity": 1,
+          "unit_price": 149,
+          "order_date": "2026-01-05T23:00:00.000Z",
+          "status": "processing",
+          "region": "south"
+        }
+      },
+      {
+        "json": {
+          "order_id": "ORD-004",
+          "customer_name": "Acme Corp",
+          "customer_email": "orders@acme.example",
+          "product": "Add-on: Priority Support",
+          "quantity": 1,
+          "unit_price": 99,
+          "order_date": "2026-01-06T23:00:00.000Z",
+          "status": "delivered",
+          "region": "north"
+        }
+      },
+      {
+        "json": {
+          "order_id": "ORD-005",
+          "customer_name": "DataFlow Ltd",
+          "customer_email": "admin@dataflow.example",
+          "product": "Enterprise License",
+          "quantity": 1,
+          "unit_price": 299,
+          "order_date": "2026-01-06T23:00:00.000Z",
+          "status": "pending",
+          "region": "east"
+        }
+      },
+      {
+        "json": {
+          "order_id": "ORD-006",
+          "customer_name": "CloudNine Solutions",
+          "customer_email": "info@cloudnine.example",
+          "product": "Professional Plan",
+          "quantity": 3,
+          "unit_price": 149,
+          "order_date": "2026-01-07T23:00:00.000Z",
+          "status": "shipped",
+          "region": "west"
+        }
+      },
+      {
+        "json": {
+          "order_id": "ORD-007",
+          "customer_name": "Bright Ideas Co",
+          "customer_email": "hello@brightideas.example",
+          "product": "Starter Plan",
+          "quantity": 10,
+          "unit_price": 49,
+          "order_date": "2026-01-07T23:00:00.000Z",
+          "status": "delivered",
+          "region": "north"
+        }
+      },
+      {
+        "json": {
+          "order_id": "ORD-008",
+          "customer_name": "Summit Enterprises",
+          "customer_email": "procurement@summit.example",
+          "product": "Enterprise License",
+          "quantity": 5,
+          "unit_price": 299,
+          "order_date": "2026-01-08T23:00:00.000Z",
+          "status": "processing",
+          "region": "north"
+        }
+      },
+      {
+        "json": {
+          "order_id": "ORD-009",
+          "customer_name": "TechStart Inc",
+          "customer_email": "billing@techstart.example",
+          "product": "Add-on: API Access",
+          "quantity": 1,
+          "unit_price": 79,
+          "order_date": "2026-01-08T23:00:00.000Z",
+          "status": "delivered",
+          "region": "west"
+        }
+      },
+      {
+        "json": {
+          "order_id": "ORD-010",
+          "customer_name": "Innovate LLC",
+          "customer_email": "orders@innovate.example",
+          "product": "Professional Plan",
+          "quantity": 2,
+          "unit_price": 149,
+          "order_date": "2026-01-09T23:00:00.000Z",
+          "status": "shipped",
+          "region": "east"
+        }
+      },
+      {
+        "json": {
+          "order_id": "ORD-011",
+          "customer_name": "Pioneer Tech",
+          "customer_email": "buying@pioneer.example",
+          "product": "Starter Plan",
+          "quantity": 1,
+          "unit_price": 49,
+          "order_date": "2026-01-09T23:00:00.000Z",
+          "status": "pending",
+          "region": "south"
+        }
+      },
+      {
+        "json": {
+          "order_id": "ORD-012",
+          "customer_name": "Nexus Industries",
+          "customer_email": "accounts@nexus.example",
+          "product": "Enterprise License",
+          "quantity": 3,
+          "unit_price": 299,
+          "order_date": "2026-01-10T23:00:00.000Z",
+          "status": "delivered",
+          "region": "north"
+        }
+      },
+      {
+        "json": {
+          "order_id": "ORD-013",
+          "customer_name": "Global Systems",
+          "customer_email": "purchasing@globalsys.example",
+          "product": "Add-on: Priority Support",
+          "quantity": 1,
+          "unit_price": 99,
+          "order_date": "2026-01-10T23:00:00.000Z",
+          "status": "shipped",
+          "region": "south"
+        }
+      },
+      {
+        "json": {
+          "order_id": "ORD-014",
+          "customer_name": "DataFlow Ltd",
+          "customer_email": "admin@dataflow.example",
+          "product": "Professional Plan",
+          "quantity": 1,
+          "unit_price": 149,
+          "order_date": "2026-01-11T23:00:00.000Z",
+          "status": "processing",
+          "region": "east"
+        }
+      },
+      {
+        "json": {
+          "order_id": "ORD-015",
+          "customer_name": "CloudNine Solutions",
+          "customer_email": "info@cloudnine.example",
+          "product": "Starter Plan",
+          "quantity": 2,
+          "unit_price": 49,
+          "order_date": "2026-01-11T23:00:00.000Z",
+          "status": "delivered",
+          "region": "west"
+        }
+      },
+      {
+        "json": {
+          "order_id": "ORD-016",
+          "customer_name": "Acme Corp",
+          "customer_email": "orders@acme.example",
+          "product": "Professional Plan",
+          "quantity": 1,
+          "unit_price": 149,
+          "order_date": "2026-01-12T23:00:00.000Z",
+          "status": "shipped",
+          "region": "north"
+        }
+      },
+      {
+        "json": {
+          "order_id": "ORD-017",
+          "customer_name": "Bright Ideas Co",
+          "customer_email": "hello@brightideas.example",
+          "product": "Enterprise License",
+          "quantity": 1,
+          "unit_price": 299,
+          "order_date": "2026-01-12T23:00:00.000Z",
+          "status": "pending",
+          "region": "south"
+        }
+      },
+      {
+        "json": {
+          "order_id": "ORD-018",
+          "customer_name": "Summit Enterprises",
+          "customer_email": "procurement@summit.example",
+          "product": "Add-on: API Access",
+          "quantity": 2,
+          "unit_price": 79,
+          "order_date": "2026-01-13T23:00:00.000Z",
+          "status": "delivered",
+          "region": "north"
+        }
+      },
+      {
+        "json": {
+          "order_id": "ORD-019",
+          "customer_name": "Innovate LLC",
+          "customer_email": "orders@innovate.example",
+          "product": "Starter Plan",
+          "quantity": 4,
+          "unit_price": 49,
+          "order_date": "2026-01-13T23:00:00.000Z",
+          "status": "shipped",
+          "region": "east"
+        }
+      },
+      {
+        "json": {
+          "order_id": "ORD-020",
+          "customer_name": "Pioneer Tech",
+          "customer_email": "buying@pioneer.example",
+          "product": "Professional Plan",
+          "quantity": 1,
+          "unit_price": 149,
+          "order_date": "2026-01-14T23:00:00.000Z",
+          "status": "processing",
+          "region": "south"
+        }
+      },
+      {
+        "json": {
+          "order_id": "ORD-021",
+          "customer_name": "Nexus Industries",
+          "customer_email": "accounts@nexus.example",
+          "product": "Starter Plan",
+          "quantity": 6,
+          "unit_price": 49,
+          "order_date": "2026-01-14T23:00:00.000Z",
+          "status": "delivered",
+          "region": "north"
+        }
+      },
+      {
+        "json": {
+          "order_id": "ORD-022",
+          "customer_name": "TechStart Inc",
+          "customer_email": "billing@techstart.example",
+          "product": "Enterprise License",
+          "quantity": 1,
+          "unit_price": 299,
+          "order_date": "2026-01-15T23:00:00.000Z",
+          "status": "shipped",
+          "region": "west"
+        }
+      },
+      {
+        "json": {
+          "order_id": "ORD-023",
+          "customer_name": "Global Systems",
+          "customer_email": "purchasing@globalsys.example",
+          "product": "Add-on: API Access",
+          "quantity": 1,
+          "unit_price": 79,
+          "order_date": "2026-01-15T23:00:00.000Z",
+          "status": "pending",
+          "region": "south"
+        }
+      },
+      {
+        "json": {
+          "order_id": "ORD-024",
+          "customer_name": "DataFlow Ltd",
+          "customer_email": "admin@dataflow.example",
+          "product": "Starter Plan",
+          "quantity": 3,
+          "unit_price": 49,
+          "order_date": "2026-01-16T23:00:00.000Z",
+          "status": "delivered",
+          "region": "east"
+        }
+      },
+      {
+        "json": {
+          "order_id": "ORD-025",
+          "customer_name": "CloudNine Solutions",
+          "customer_email": "info@cloudnine.example",
+          "product": "Enterprise License",
+          "quantity": 2,
+          "unit_price": 299,
+          "order_date": "2026-01-16T23:00:00.000Z",
+          "status": "processing",
+          "region": "west"
+        }
+      },
+      {
+        "json": {
+          "order_id": "ORD-026",
+          "customer_name": "Bright Ideas Co",
+          "customer_email": "hello@brightideas.example",
+          "product": "Professional Plan",
+          "quantity": 1,
+          "unit_price": 149,
+          "order_date": "2026-01-17T23:00:00.000Z",
+          "status": "shipped",
+          "region": "south"
+        }
+      },
+      {
+        "json": {
+          "order_id": "ORD-027",
+          "customer_name": "Summit Enterprises",
+          "customer_email": "procurement@summit.example",
+          "product": "Starter Plan",
+          "quantity": 2,
+          "unit_price": 49,
+          "order_date": "2026-01-17T23:00:00.000Z",
+          "status": "delivered",
+          "region": "north"
+        }
+      },
+      {
+        "json": {
+          "order_id": "ORD-028",
+          "customer_name": "Innovate LLC",
+          "customer_email": "orders@innovate.example",
+          "product": "Add-on: Priority Support",
+          "quantity": 1,
+          "unit_price": 99,
+          "order_date": "2026-01-18T23:00:00.000Z",
+          "status": "pending",
+          "region": "east"
+        }
+      },
+      {
+        "json": {
+          "order_id": "ORD-029",
+          "customer_name": "Pioneer Tech",
+          "customer_email": "buying@pioneer.example",
+          "product": "Enterprise License",
+          "quantity": 1,
+          "unit_price": 299,
+          "order_date": "2026-01-18T23:00:00.000Z",
+          "status": "shipped",
+          "region": "south"
+        }
+      },
+      {
+        "json": {
+          "order_id": "ORD-030",
+          "customer_name": "Nexus Industries",
+          "customer_email": "accounts@nexus.example",
+          "product": "Professional Plan",
+          "quantity": 2,
+          "unit_price": 149,
+          "order_date": "2026-01-19T23:00:00.000Z",
+          "status": "delivered",
+          "region": "north"
+        }
+      },
+      {
+        "json": {
+          "order_id": "ORD-031",
+          "customer_name": "Acme Corp",
+          "customer_email": "orders@acme.example",
+          "product": "Starter Plan",
+          "quantity": 1,
+          "unit_price": 49,
+          "order_date": "2026-01-19T23:00:00.000Z",
+          "status": "processing",
+          "region": "north"
+        }
+      },
+      {
+        "json": {
+          "order_id": "ORD-032",
+          "customer_name": "TechStart Inc",
+          "customer_email": "billing@techstart.example",
+          "product": "Professional Plan",
+          "quantity": 2,
+          "unit_price": 149,
+          "order_date": "2026-01-20T23:00:00.000Z",
+          "status": "shipped",
+          "region": "west"
+        }
+      },
+      {
+        "json": {
+          "order_id": "ORD-033",
+          "customer_name": "Global Systems",
+          "customer_email": "purchasing@globalsys.example",
+          "product": "Enterprise License",
+          "quantity": 1,
+          "unit_price": 299,
+          "order_date": "2026-01-20T23:00:00.000Z",
+          "status": "delivered",
+          "region": "south"
+        }
+      },
+      {
+        "json": {
+          "order_id": "ORD-034",
+          "customer_name": "DataFlow Ltd",
+          "customer_email": "admin@dataflow.example",
+          "product": "Add-on: Priority Support",
+          "quantity": 1,
+          "unit_price": 99,
+          "order_date": "2026-01-21T23:00:00.000Z",
+          "status": "pending",
+          "region": "east"
+        }
+      },
+      {
+        "json": {
+          "order_id": "ORD-035",
+          "customer_name": "CloudNine Solutions",
+          "customer_email": "info@cloudnine.example",
+          "product": "Starter Plan",
+          "quantity": 5,
+          "unit_price": 49,
+          "order_date": "2026-01-21T23:00:00.000Z",
+          "status": "shipped",
+          "region": "west"
+        }
+      },
+      {
+        "json": {
+          "order_id": "ORD-036",
+          "customer_name": "Bright Ideas Co",
+          "customer_email": "hello@brightideas.example",
+          "product": "Add-on: API Access",
+          "quantity": 1,
+          "unit_price": 79,
+          "order_date": "2026-01-22T23:00:00.000Z",
+          "status": "delivered",
+          "region": "south"
+        }
+      },
+      {
+        "json": {
+          "order_id": "ORD-037",
+          "customer_name": "Summit Enterprises",
+          "customer_email": "procurement@summit.example",
+          "product": "Professional Plan",
+          "quantity": 1,
+          "unit_price": 149,
+          "order_date": "2026-01-22T23:00:00.000Z",
+          "status": "processing",
+          "region": "north"
+        }
+      },
+      {
+        "json": {
+          "order_id": "ORD-038",
+          "customer_name": "Innovate LLC",
+          "customer_email": "orders@innovate.example",
+          "product": "Enterprise License",
+          "quantity": 1,
+          "unit_price": 299,
+          "order_date": "2026-01-23T23:00:00.000Z",
+          "status": "shipped",
+          "region": "east"
+        }
+      },
+      {
+        "json": {
+          "order_id": "ORD-039",
+          "customer_name": "Pioneer Tech",
+          "customer_email": "buying@pioneer.example",
+          "product": "Add-on: API Access",
+          "quantity": 2,
+          "unit_price": 79,
+          "order_date": "2026-01-23T23:00:00.000Z",
+          "status": "delivered",
+          "region": "south"
+        }
+      },
+      {
+        "json": {
+          "order_id": "ORD-040",
+          "customer_name": "Nexus Industries",
+          "customer_email": "accounts@nexus.example",
+          "product": "Starter Plan",
+          "quantity": 1,
+          "unit_price": 49,
+          "order_date": "2026-01-24T23:00:00.000Z",
+          "status": "pending",
+          "region": "north"
+        }
+      },
+      {
+        "json": {
+          "order_id": "ORD-041",
+          "customer_name": "Acme Corp",
+          "customer_email": "orders@acme.example",
+          "product": "Add-on: API Access",
+          "quantity": 1,
+          "unit_price": 79,
+          "order_date": "2026-01-24T23:00:00.000Z",
+          "status": "shipped",
+          "region": "north"
+        }
+      },
+      {
+        "json": {
+          "order_id": "ORD-042",
+          "customer_name": "TechStart Inc",
+          "customer_email": "billing@techstart.example",
+          "product": "Add-on: Priority Support",
+          "quantity": 1,
+          "unit_price": 99,
+          "order_date": "2026-01-25T23:00:00.000Z",
+          "status": "delivered",
+          "region": "west"
+        }
+      },
+      {
+        "json": {
+          "order_id": "ORD-043",
+          "customer_name": "Global Systems",
+          "customer_email": "purchasing@globalsys.example",
+          "product": "Starter Plan",
+          "quantity": 2,
+          "unit_price": 49,
+          "order_date": "2026-01-25T23:00:00.000Z",
+          "status": "processing",
+          "region": "south"
+        }
+      },
+      {
+        "json": {
+          "order_id": "ORD-044",
+          "customer_name": "DataFlow Ltd",
+          "customer_email": "admin@dataflow.example",
+          "product": "Enterprise License",
+          "quantity": 2,
+          "unit_price": 299,
+          "order_date": "2026-01-26T23:00:00.000Z",
+          "status": "shipped",
+          "region": "east"
+        }
+      },
+      {
+        "json": {
+          "order_id": "ORD-045",
+          "customer_name": "CloudNine Solutions",
+          "customer_email": "info@cloudnine.example",
+          "product": "Add-on: Priority Support",
+          "quantity": 1,
+          "unit_price": 99,
+          "order_date": "2026-01-26T23:00:00.000Z",
+          "status": "delivered",
+          "region": "west"
+        }
+      },
+      {
+        "json": {
+          "order_id": "ORD-046",
+          "customer_name": "Bright Ideas Co",
+          "customer_email": "hello@brightideas.example",
+          "product": "Professional Plan",
+          "quantity": 2,
+          "unit_price": 149,
+          "order_date": "2026-01-27T23:00:00.000Z",
+          "status": "pending",
+          "region": "south"
+        }
+      },
+      {
+        "json": {
+          "order_id": "ORD-047",
+          "customer_name": "Summit Enterprises",
+          "customer_email": "procurement@summit.example",
+          "product": "Starter Plan",
+          "quantity": 3,
+          "unit_price": 49,
+          "order_date": "2026-01-27T23:00:00.000Z",
+          "status": "shipped",
+          "region": "north"
+        }
+      },
+      {
+        "json": {
+          "order_id": "ORD-048",
+          "customer_name": "Innovate LLC",
+          "customer_email": "orders@innovate.example",
+          "product": "Add-on: API Access",
+          "quantity": 1,
+          "unit_price": 79,
+          "order_date": "2026-01-28T23:00:00.000Z",
+          "status": "delivered",
+          "region": "east"
+        }
+      },
+      {
+        "json": {
+          "order_id": "ORD-049",
+          "customer_name": "Pioneer Tech",
+          "customer_email": "buying@pioneer.example",
+          "product": "Professional Plan",
+          "quantity": 1,
+          "unit_price": 149,
+          "order_date": "2026-01-28T23:00:00.000Z",
+          "status": "processing",
+          "region": "south"
+        }
+      },
+      {
+        "json": {
+          "order_id": "ORD-050",
+          "customer_name": "Nexus Industries",
+          "customer_email": "accounts@nexus.example",
+          "product": "Enterprise License",
+          "quantity": 1,
+          "unit_price": 299,
+          "order_date": "2026-01-29T23:00:00.000Z",
+          "status": "shipped",
+          "region": "north"
+        }
+      }
+    ],
+    "Summarize": [
+      {
+        "json": {
+          "sum_order_total_": 2932,
+          "count_order_total_": 8,
+          "average_order_total_": 366.5,
+          "region": "north"
+        }
+      },
+      {
+        "json": {
+          "sum_order_total_": 375,
+          "count_order_total_": 4,
+          "average_order_total_": 93.75,
+          "region": "west"
+        }
+      },
+      {
+        "json": {
+          "sum_order_total_": 226,
+          "count_order_total_": 2,
+          "average_order_total_": 113,
+          "region": "east"
+        }
+      },
+      {
+        "json": {
+          "sum_order_total_": 536,
+          "count_order_total_": 3,
+          "average_order_total_": 178.66666666666666,
+          "region": "south"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "TriggerManual": {
+      "main": [
+        [
+          {
+            "node": "GetSalesData",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AggregateOrders": {
+      "main": [
+        [
+          {
+            "node": "SendOrders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SetOrderTotals": {
+      "main": [
+        [
+          {
+            "node": "FilterDelivered",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "AggregateOrders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GetSalesData": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "SetOrderTotals",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FilterDelivered": {
+      "main": [
+        [
+          {
+            "node": "Summarize",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "IgnoreNonDelivered",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SendAnalysis": {
+      "main": [
+        []
+      ]
+    },
+    "Summarize": {
+      "main": [
+        [
+          {
+            "node": "UpdateFieldNames",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "SendAnalysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UpdateFieldNames": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "SetReportMetadata",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SetReportMetadata": {
+      "main": [
+        [
+          {
+            "node": "ConvertToCSV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ConvertToCSV": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "a8875e78-417e-4c9e-baeb-bd2a39306080",
+  "meta": {
+    "instanceId": "96d190966a50ee81569839f3c11ecf936fe29f24a8ecb72651027c4db44d8e75"
+  },
+  "nodeGroups": [],
+  "id": "3OtZOfbrFkbiXeFH",
+  "tags": [
+    {
+      "updatedAt": "2026-10-10T18:22:32.434Z",
+      "createdAt": "2026-10-10T18:22:32.434Z",
+      "id": "4cE634PsFFaRGdeU",
+      "name": "n8n101"
+    }
+  ]
+}
