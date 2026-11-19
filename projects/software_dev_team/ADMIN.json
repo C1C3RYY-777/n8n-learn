@@ -1,0 +1,313 @@
+{
+  "name": "ADMIN",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "hola",
+        "options": {
+          "systemMessage": "Eres un Senior Product Manager y Tech Lead de clase mundial.\nTu único trabajo es recibir una idea cruda de software y transformarla en una Especificación Técnica Formal bajo la metodología SDD (Spec-Driven Development) y Diseño por Contrato (DBC).\nDebes analizar la idea y responder ÚNICAMENTE con un objeto JSON válido (sin texto adicional ni bloques ```json), con la siguiente estructura estricta:\n{\n  \"titulo_proyecto\": \"Nombre corto y profesional del proyecto\",\n  \"resumen_ejecutivo\": \" descripción del problema y la solución\",\n  \"requisitos\": {\n    \"funcionales\": [\"Lista de lo que el sistema debe hacer y cumplir, concreta y robustamente\"],\n    \"no_funcionales\": [\"Rendimiento, seguridad, escalabilidad\"]\n  },\n  \"comportamiento_bdd\": [\n    {\n      \"escenario\": \"Nombre del caso de uso\",\n      \"dado\": \"Condición inicial (Precondición)\",\n      \"cuando\": \"Acción que ejecuta el usuario o el sistema\",\n      \"entonces\": \"Resultado esperado (Postcondición)\"\n    }\n  ],\n  \"invariantes\": [\n    \"Reglas inmutables que NUNCA deben romperse bajo ninguna circunstancia (seguridad, integridad de datos)\"\n  ],\n  \"criterios_aceptacion\": [\n    \"Checklist binario (cumple / no cumple) para que el Agente Testeador evalúe el código final\"\n  \n  ]\n\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        304,
+        -128
+      ],
+      "id": "64550af5-946b-45d1-b097-bd87c40575d2",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "formTitle": "Uploat proyect documentation ",
+        "formDescription": "Upload the official documentation for your application or webpage so the agents understand the exact scope of work.\n\nNote: Please be as specific as possible about your vision, what features you expect the project to have, and any strict rules or requirements (invariants) it must follow. (Optional: Technical details like programming languages, security protocols, or styling frameworks are not required if you don't have a technical background.)\n\nSimple Example:\n\n\"I want a webpage with a dark color scheme and a modern font. It should include microservices such as a payment gateway, a messaging space for users, location services, and a product catalog with inventory management in the admin panel. (Optional: Use Tailwind CSS, React, and TypeScript for the frontend, and Python for data graphics.)\"\n\n",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Document",
+              "fieldType": "file"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        -16,
+        -96
+      ],
+      "id": "c9cb2776-056b-496a-b506-b0f9a0d3ef32",
+      "name": "Archivo de proyecto",
+      "webhookId": "31525b05-56bf-41b3-a917-0044ed6965e5"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.1-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        208,
+        128
+      ],
+      "id": "a232ec5e-fff3-42f2-9462-70d052f335bb",
+      "name": "Modelo IA",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "3pJufXTG0oxE9vKg",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $execution.id }}",
+        "tableName": "n8n_chat_ADMIN_historial",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.4,
+      "position": [
+        400,
+        128
+      ],
+      "id": "62b7141e-849e-4060-a3c9-dff0185963fb",
+      "name": "MEMORIA",
+      "credentials": {
+        "postgres": {
+          "id": "8FTkGYUx93bIIIUg",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "projects",
+          "mode": "list",
+          "cachedResultName": "projects"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "title": "prototipo",
+            "raw_idea": "Upload the official documentation for your application or webpage so the agents understand the exact scope of work.  Note: Please be as specific as possible about your vision, what features you expect the project to have, and any strict rules or requirements (invariants) it must follow. (Optional: Technical details like programming languages, security protocols, or styling frameworks are not required if you don't have a technical background.)  Simple Example:  \"I want a webpage with a dark color scheme and a modern font. It should include microservices such as a payment gateway, a messaging space for users, location services, and a product catalog with inventory management in the admin panel. (Optional: Use Tailwind CSS, React, and TypeScript for the frontend, and Python for data graphics.)\"",
+            "status": "SPEC_DRAFT",
+            "spec_data": "={{ $json.output }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "raw_idea",
+              "displayName": "raw_idea",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "spec_data",
+              "displayName": "spec_data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "architecture_plan",
+              "displayName": "architecture_plan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "qa_report",
+              "displayName": "qa_report",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        608,
+        -128
+      ],
+      "id": "8c089b88-2e20-4470-9f3e-19650bddbcbe",
+      "name": "guardar SDD",
+      "credentials": {
+        "postgres": {
+          "id": "8FTkGYUx93bIIIUg",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "pt7VA4G5OSWc711z",
+          "mode": "id",
+          "cachedResultUrl": "/workflow/pt7VA4G5OSWc711z"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        800,
+        -128
+      ],
+      "id": "d826ada3-bc0e-4641-8b99-e1ed83b73e95",
+      "name": "Pasar al testeador"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "guardar SDD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Archivo de proyecto": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Modelo IA": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MEMORIA": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "guardar SDD": {
+      "main": [
+        [
+          {
+            "node": "Pasar al testeador",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "605ae4e1-47b1-46c9-891c-b0e3241cc742",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "96d190966a50ee81569839f3c11ecf936fe29f24a8ecb72651027c4db44d8e75"
+  },
+  "nodeGroups": [],
+  "id": "JrZ6oIdoykRFgsxs",
+  "tags": [
+    {
+      "updatedAt": "2026-11-12T01:49:25.285Z",
+      "createdAt": "2026-11-12T01:49:25.285Z",
+      "id": "BKymROGPBdurzPrl",
+      "name": "AGENTS"
+    }
+  ]
+}
