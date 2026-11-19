@@ -1,0 +1,44 @@
+{
+  "titulo_proyecto": "Plataforma de E-Commerce con Gestión de Inventario en Tiempo Real",
+  "resumen_ejecutivo": "Sistema modular de comercio electrónico con arquitectura de microservicios orientada a eventos, pasarela de pago segura, panel administrativo y control concurrente de stock.",
+  "requisitos": {
+    "funcionales": [
+      "Autenticación segura de usuarios mediante JWT y OAuth2",
+      "Catálogo interactivo de productos con filtrado por categoría y búsqueda full-text",
+      "Pasarela de pagos integrada con webhook de confirmación asíncrona",
+      "Control de inventario transaccional con bloqueo optimista/pesimista para evitar sobreventas",
+      "Panel de administración para gestión de pedidos, clientes y stock"
+    ],
+    "no_funcionales": [
+      "Tiempo de respuesta p95 inferior a 250ms para consultas de catálogo",
+      "Cifrado de datos en reposo (AES-256) y en tránsito (TLS 1.3)",
+      "Disponibilidad objetivo del 99.9% con recuperación automática ante fallos",
+      "Arquitectura desacoplada en contenedores Docker y orquestable vía Kubernetes"
+    ]
+  },
+  "comportamiento_bdd": [
+    {
+      "escenario": "Compra exitosa con inventario suficiente",
+      "dado": "Un usuario autenticado con un carrito que contiene 1 unidad del producto con stock >= 1",
+      "cuando": "El usuario procesa el pago exitosamente a través de la pasarela",
+      "entonces": "Se descuenta 1 unidad del inventario, se genera la orden en estado PAGADO y se envía notificación por email"
+    },
+    {
+      "escenario": "Intento de compra concurrente sin stock suficiente",
+      "dado": "Un producto con stock igual a 1 solicitado simultáneamente por dos carritos distintos",
+      "cuando": "Ambos usuarios presionan procesar pago al mismo tiempo",
+      "entonces": "La primera transacción adquiere el bloqueo y se completa; la segunda se rechaza por inventario insuficiente sin inconsistencias"
+    }
+  ],
+  "invariantes": [
+    "El stock de cualquier producto nunca puede ser menor a cero bajo ninguna circunstancia",
+    "Ningún pedido puede cambiar a estado PROCESANDO sin confirmación criptográfica del webhook de pago",
+    "Los datos sensibles de tarjetas o credenciales nunca deben ser registrados en logs planos"
+  ],
+  "criterios_aceptacion": [
+    "Cobertura de pruebas unitarias y de integración superior al 85%",
+    "Todos los escenarios BDD pasan satisfactoriamente en el entorno de pruebas automatizadas",
+    "Análisis estático de seguridad (SAST) sin vulnerabilidades críticas o altas detectadas",
+    "Esquema de base de datos validado contra scripts de migración reversibles"
+  ]
+}
