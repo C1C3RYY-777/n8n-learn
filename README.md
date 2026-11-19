@@ -19,6 +19,7 @@ Repository dedicated to documenting and storing my practical learning journey, h
 | [`Generating Reports.json`](./Generating%20Reports.json) | **Reporting** | Manual Trigger, Data Table, Merge Node | Aggregates customer data and prepares structured reporting outputs. |
 | [`Merging Data.json`](./Merging%20Data.json) | **ETL & Data Prep** | Manual Trigger, Data Table, HTTP Request, Merge | Combines customer data tables with country webhook data for enriched profiles. |
 | [`Nathan's Workflow.json`](./Nathan's%20Workflow.json) | **Data Management** | Manual Trigger, Data Table Upsert | Warehouse order processing and upsert operations into internal data tables. |
+| [`projects/software_dev_team/ADMIN.json`](./projects/software_dev_team/ADMIN.json) | **Multi-Agent Systems** | Form Trigger, LangChain Agent, Gemini 3.1 Flash Lite, Postgres Memory, Postgres DB, Execute Workflow | Autonomous Tech Lead agent generating SDD specifications and orchestrating downstream QA workflows. |
 
 ---
 
@@ -46,6 +47,14 @@ An autonomous conversational agent built on LangChain components inside n8n:
 - **Tool Calling**:
   - `GetCustomers`: Queries customer profiles from n8n internal Data Tables.
   - `GetOrderData`: Interacts with live order database via authenticated HTTP header tool requests.
+
+### 4. 🧠 Autonomous Software Development Team (`projects/software_dev_team/`)
+An enterprise multi-agent engineering architecture implementing **Spec-Driven Development (SDD)** & **Design by Contract (DbC)**:
+- **Intake Trigger**: Form trigger capturing project documentation and raw stakeholder ideas.
+- **Tech Lead Agent**: Powered by Gemini 3.1 Flash Lite and LangChain to draft structured SDD contracts with functional requirements, BDD scenarios, invariants, and acceptance criteria.
+- **State & Memory**: PostgreSQL session memory (`n8n_chat_ADMIN_historial`) and relational persistence (`projects` table).
+- **Sub-workflow Handoff**: Automates downstream delegation to tester and QA workflows (`Pasar al testeador`).
+- *See the comprehensive guide in [`projects/software_dev_team/README.md`](./projects/software_dev_team/README.md).*
 
 ---
 
@@ -75,7 +84,8 @@ When importing these workflows, configure the following credentials within n8n:
 
 | Credential Type | Workflows Used | Description |
 | :--- | :--- | :--- |
-| **Google Gemini (PaLM) API** | `My workflow.json` | API key from Google AI Studio for Gemini chat completion. |
+| **Google Gemini (PaLM) API** | `My workflow.json`, `ADMIN.json` | API key from Google AI Studio for Gemini chat and Tech Lead agent completion. |
+| **PostgreSQL** | `projects/software_dev_team/ADMIN.json` | Database connection for relational project state (`projects`) and LangChain chat memory. |
 | **Discord Webhook** | `Monitor Report Errors.json` | Channel webhook URL for automated incident notification. |
 | **HTTP Header Auth** | `My workflow.json`, `Section 2` | Custom assessment / API tokens for data retrieval endpoints. |
 | **n8n Internal Data Tables** | `Nathan's Workflow`, `Merging Data`, `Generating Reports` | Data Table schemas for `Orders` and `Customers`. |
@@ -89,7 +99,7 @@ When importing these workflows, configure the following credentials within n8n:
 - [x] **Advanced Pipelines**: End-to-end sales processing, CSV transformations, automated reporting.
 - [x] **Error Handling & Resiliency**: Error triggers, webhook alerts, and exception handling.
 - [x] **AI & Autonomous Agents**: LangChain integration, LLM tool-calling, window memory buffers.
-- [ ] **Sub-workflows & Webhooks**: Modular multi-workflow orchestration.
+- [x] **Sub-workflows & Multi-Agent Teams**: Modular orchestration, PostgreSQL state tracking, SDD/DbC agents.
 - [ ] **Custom Community Nodes**: Extending n8n capabilities with custom TypeScript nodes.
 
 ---
@@ -100,6 +110,17 @@ When importing these workflows, configure the following credentials within n8n:
 n8n-learn/
 ├── assets/
 │   └── {E4DEFB35-F8A0-459C-82D2-007BE8129497}.png  # Workflow screenshots & diagrams
+├── projects/
+│   └── software_dev_team/                           # Autonomous Software Development Squad
+│       ├── ADMIN.json                               # Tech Lead & SDD Specification generator
+│       ├── README.md                                # Project guide & setup instructions
+│       ├── schema.sql                               # PostgreSQL tables & trigger definitions
+│       ├── docs/
+│       │   └── pipeline_architecture.md             # Mermaid diagrams & agent state machine
+│       ├── prompts/
+│       │   └── tech_lead_system_prompt.md           # System prompt for Tech Lead agent
+│       └── specs/
+│           └── sdd_template.json                    # Formal SDD contract template
 ├── Generating Reports.json                          # Customer report generation workflow
 ├── Merging Data.json                                # Multi-source data merging workflow
 ├── Monitor Report Errors.json                       # Global error monitoring & Discord alerts
