@@ -56,3 +56,4 @@ Your objective is to ingest raw, unrefined software ideas or uploaded project do
 - **Model**: Google Gemini 3.1 Flash Lite (`models/gemini-3.1-flash-lite`)
 - **Memory**: PostgreSQL Chat Memory (`n8n_chat_ADMIN_historial`) with window size of 10 interactions.
 - **Output Target**: Inserted directly into PostgreSQL table `projects.spec_data`.
+
