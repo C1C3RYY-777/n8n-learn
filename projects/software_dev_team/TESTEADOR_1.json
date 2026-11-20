@@ -1,0 +1,662 @@
+{
+  "name": "TESTEADOR_1",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "bce11155-2001-4177-b3ff-de5672444665",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Eres el Principal Quality Assurance Architect y Quality Gatekeeper de clase mundial.\nTu rol es la toma de decisiones de alto riesgo. Posees el derecho y la obligación de contradecir, criticar, vetar o enmendar las especificaciones creadas por el Agente Administrador (PM) si detectas ambigüedades, riesgos de seguridad o falta de rigor técnico.\n\nTu lema es \"Shift-Left Testing\": Es 100 veces más barato destruir una mala idea en el papel que arreglar un bug en producción.\n\n---\n### TUS CRITERIOS DE AUDITORÍA IMPLACABLE:\nDebes auditar el documento SDD recibido evaluando 4 pilares bajo una lupa crítica:\n\n1. INVARIANTES (Design by Contract):\n   - ¿Existen invariantes claras de seguridad, consistencia de datos y autorización?\n   - Si el PM omitió cómo proteger datos sensibles, inmutabilidad de IDs o manejo de estados inválidos, debes señalarlo como riesgo crítico.\n\n2. COMPORTAMIENTO BDD (Caminos Tristes y Casos Borde):\n   - ¿El PM solo diseñó el \"camino feliz\" (happy path)?\n   - ¿Qué pasa si la base de datos se cae, el usuario manda datos nulos, tokens expirados o ataques de inyección? Si faltan estos escenarios, la especificación es deficiente.\n\n3. REQUISITOS (Viabilidad y No Funcionales):\n   - ¿Hay contradicciones lógicas entre lo que pide el usuario y los requisitos?\n   - ¿Se especificaron límites de tasa (rate limiting), timeouts y volumen de datos?\n\n4. CRITERIOS DE ACEPTACIÓN:\n   - ¿Son verificables y binarios (verdadero/falso), o son vagos como \"la app debe ser rápida\"? Deben ser auditables mediante código.\n\n---\n### REGLAS DE DECISIÓN:\n- Si la puntuación es MENOR a 75/100 o existe AL MENOS UN riesgo de seguridad/invariante rota: \"aprobado\": false.\n- Solo si la especificación es sólida, coherente y segura: \"aprobado\": true.\n\n---\n### FORMATO DE RESPUESTA OBLIGATORIO:\nDebes responder ÚNICAMENTE con un objeto JSON válido (sin texto explicativo previo ni posterior, sin bloques de formato markdown ```json). Estructura estricta:\n\n{\n  \"aprobado\": true,\n  \"puntuacion_calidad\": 85,\n  \"veredicto\": \"APROBADO\" | \"RECHAZADO\" | \"APROBADO_CON_OBSERVACIONES\",\n  \"resumen_auditoria\": \"Juicio general del auditor sobre la madurez del documento\",\n  \"analisis_pilares\": {\n    \"invariantes\": \"Evaluación crítica de las reglas inmutables\",\n    \"comportamiento_bdd\": \"Evaluación de la cobertura de casos borde\",\n    \"requisitos\": \"Evaluación de coherencia y viabilidad\",\n    \"criterios_aceptacion\": \"Evaluación de precisión y verificabilidad\"\n  },\n  \"contradicciones_detectadas\": [\n    \"Lista de contradicciones o desacuerdos con el PM (vacío si no hay)\"\n  ],\n  \"riesgos_criticos\": [\n    \"Peligros de seguridad, arquitectura o rendimiento detectados\"\n  ],\n  \"recomendaciones_obligatorias\": [\n    \"Instrucciones precisas de lo que se debe agregar o corregir\"\n  ]\n}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "81c1fc42-0b88-45d0-be93-08f5e8d356b2",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        96,
+        208
+      ],
+      "id": "aacb0ddd-bd75-4db0-80c8-66f727ce140e",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "3pJufXTG0oxE9vKg",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.4,
+      "position": [
+        304,
+        208
+      ],
+      "id": "d7b57583-a71a-4bce-802a-ed563dd801ce",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "8FTkGYUx93bIIIUg",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Query', ``, 'string') }}"
+      },
+      "type": "n8n-nodes-agentsearch.agentSearchTool",
+      "typeVersion": 1,
+      "position": [
+        480,
+        208
+      ],
+      "id": "a2913d6e-272f-4c32-a29a-ffab2e169065",
+      "name": "AgentSearch"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "projects",
+          "mode": "list",
+          "cachedResultName": "projects"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('When Executed by Another Workflow').item.json.id }}",
+            "qa_report": "={{ $json.output }}",
+            "status": "={{ $json.output.aprobado ? 'SPEC_APPROVED' : 'SPEC_REJECTED' }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "raw_idea",
+              "displayName": "raw_idea",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "spec_data",
+              "displayName": "spec_data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "architecture_plan",
+              "displayName": "architecture_plan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "qa_report",
+              "displayName": "qa_report",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        1008,
+        -128
+      ],
+      "id": "554e1a84-5b74-4334-87a2-8756b61c7a57",
+      "name": "Update rows in a table",
+      "credentials": {
+        "postgres": {
+          "id": "8FTkGYUx93bIIIUg",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "20dab405-78cb-432b-b160-2e1c5dba3054",
+              "leftValue": "={{ $json.output.aprobado }}",
+              "rightValue": "'SPEC_APPROVED' ",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        592,
+        0
+      ],
+      "id": "2f3b7e80-7a38-4913-b245-71702d7f0b10",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "projects",
+          "mode": "list",
+          "cachedResultName": "projects"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('When Executed by Another Workflow').item.json.id }}",
+            "qa_report": "={{ $json.output }}",
+            "status": "={{ $json.output.aprobado ? 'SPEC_APPROVED' : 'SPEC_REJECTED' }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "raw_idea",
+              "displayName": "raw_idea",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "spec_data",
+              "displayName": "spec_data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "architecture_plan",
+              "displayName": "architecture_plan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "qa_report",
+              "displayName": "qa_report",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        880,
+        80
+      ],
+      "id": "6d3c8062-bd64-4387-9179-c4592ca91c81",
+      "name": "Update rows in a table1",
+      "credentials": {
+        "postgres": {
+          "id": "8FTkGYUx93bIIIUg",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "1be590ee-ea7e-4888-accb-b52124233036",
+              "leftValue": "={{ $('When Executed by Another Workflow').item.json.retry_count || 1 }}",
+              "rightValue": 2,
+              "operator": {
+                "type": "number",
+                "operation": "lte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1056,
+        224
+      ],
+      "id": "8593aadf-9110-4a94-af8e-032ea1500b67",
+      "name": "¿Reintentos < 2?"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "JrZ6oIdoykRFgsxs",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/JrZ6oIdoykRFgsxs",
+          "cachedResultName": "ADMIN"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        1296,
+        128
+      ],
+      "id": "8f05ea44-fe4a-418b-be63-b7165e7a2373",
+      "name": "Call 'ADMIN'"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "projects",
+          "mode": "list",
+          "cachedResultName": "projects"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('When Executed by Another Workflow').item.json.id }}",
+            "status": "MAX_RETRIES_REACHED",
+            "qa_report": "={{ $('AI Agent').item.json.output }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "raw_idea",
+              "displayName": "raw_idea",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "spec_data",
+              "displayName": "spec_data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "architecture_plan",
+              "displayName": "architecture_plan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "qa_report",
+              "displayName": "qa_report",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        1328,
+        320
+      ],
+      "id": "8803d8b8-e98c-4c4c-9f9f-2c2dab8033f8",
+      "name": "Update rows in a table2",
+      "credentials": {
+        "postgres": {
+          "id": "8FTkGYUx93bIIIUg",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AgentSearch": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Update rows in a table",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update rows in a table1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update rows in a table1": {
+      "main": [
+        [
+          {
+            "node": "¿Reintentos < 2?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Reintentos < 2?": {
+      "main": [
+        [
+          {
+            "node": "Call 'ADMIN'",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update rows in a table2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "96adac98-5055-47ec-90af-ab1a37e3a588",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "96d190966a50ee81569839f3c11ecf936fe29f24a8ecb72651027c4db44d8e75"
+  },
+  "nodeGroups": [],
+  "id": "pt7VA4G5OSWc711z",
+  "tags": [
+    {
+      "updatedAt": "2026-11-12T01:49:25.285Z",
+      "createdAt": "2026-11-12T01:49:25.285Z",
+      "id": "BKymROGPBdurzPrl",
+      "name": "AGENTS"
+    }
+  ]
+}
