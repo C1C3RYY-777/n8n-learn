@@ -20,6 +20,7 @@ Repository dedicated to documenting and storing my practical learning journey, h
 | [`Merging Data.json`](./Merging%20Data.json) | **ETL & Data Prep** | Manual Trigger, Data Table, HTTP Request, Merge | Combines customer data tables with country webhook data for enriched profiles. |
 | [`Nathan's Workflow.json`](./Nathan's%20Workflow.json) | **Data Management** | Manual Trigger, Data Table Upsert | Warehouse order processing and upsert operations into internal data tables. |
 | [`projects/software_dev_team/ADMIN.json`](./projects/software_dev_team/ADMIN.json) | **Multi-Agent Systems** | Form Trigger, LangChain Agent, Gemini 3.1 Flash Lite, Postgres Memory, Postgres DB, Execute Workflow | Autonomous Tech Lead agent generating SDD specifications and orchestrating downstream QA workflows. |
+| [`projects/software_dev_team/TESTEADOR_1.json`](./projects/software_dev_team/TESTEADOR_1.json) | **Multi-Agent Systems** | Sub-workflow Trigger, LangChain Agent, Gemini Chat, Postgres Memory, AgentSearch, If, Postgres DB | Principal QA Gatekeeper auditing SDD specs across 4 pillars with automated feedback loop back to Admin. |
 
 ---
 
@@ -50,10 +51,11 @@ An autonomous conversational agent built on LangChain components inside n8n:
 
 ### 4. 🧠 Autonomous Software Development Team (`projects/software_dev_team/`)
 An enterprise multi-agent engineering architecture implementing **Spec-Driven Development (SDD)** & **Design by Contract (DbC)**:
-- **Intake Trigger**: Form trigger capturing project documentation and raw stakeholder ideas.
-- **Tech Lead Agent**: Powered by Gemini 3.1 Flash Lite and LangChain to draft structured SDD contracts with functional requirements, BDD scenarios, invariants, and acceptance criteria.
-- **State & Memory**: PostgreSQL session memory (`n8n_chat_ADMIN_historial`) and relational persistence (`projects` table).
-- **Sub-workflow Handoff**: Automates downstream delegation to tester and QA workflows (`Pasar al testeador`).
+- **Intake Trigger (`ADMIN.json`)**: Form trigger capturing project documentation and raw stakeholder ideas.
+- **Tech Lead Agent (`ADMIN.json`)**: Powered by Gemini 3.1 Flash Lite and LangChain to draft structured SDD contracts with functional requirements, BDD scenarios, invariants, and acceptance criteria.
+- **Shift-Left QA Gatekeeper (`TESTEADOR_1.json`)**: Audits specifications across 4 pillars (Invariants, BDD sad paths/edge cases, Requirements feasibility, and Acceptance criteria).
+- **Automated Feedback Loop**: If an SDD contract fails QA audit, it automatically triggers revisions with ADMIN (up to 2 retry cycles) before setting `MAX_RETRIES_REACHED`.
+- **State & Memory**: PostgreSQL session memory (`n8n_chat_ADMIN_historial`, `n8n_chat_histories`) and relational persistence (`projects` table).
 - *See the comprehensive guide in [`projects/software_dev_team/README.md`](./projects/software_dev_team/README.md).*
 
 ---
@@ -84,8 +86,8 @@ When importing these workflows, configure the following credentials within n8n:
 
 | Credential Type | Workflows Used | Description |
 | :--- | :--- | :--- |
-| **Google Gemini (PaLM) API** | `My workflow.json`, `ADMIN.json` | API key from Google AI Studio for Gemini chat and Tech Lead agent completion. |
-| **PostgreSQL** | `projects/software_dev_team/ADMIN.json` | Database connection for relational project state (`projects`) and LangChain chat memory. |
+| **Google Gemini (PaLM) API** | `My workflow.json`, `ADMIN.json`, `TESTEADOR_1.json` | API key from Google AI Studio for Gemini chat, Tech Lead, and QA agent completions. |
+| **PostgreSQL** | `ADMIN.json`, `TESTEADOR_1.json` | Database connection for relational project state (`projects`) and LangChain chat memory. |
 | **Discord Webhook** | `Monitor Report Errors.json` | Channel webhook URL for automated incident notification. |
 | **HTTP Header Auth** | `My workflow.json`, `Section 2` | Custom assessment / API tokens for data retrieval endpoints. |
 | **n8n Internal Data Tables** | `Nathan's Workflow`, `Merging Data`, `Generating Reports` | Data Table schemas for `Orders` and `Customers`. |
@@ -100,6 +102,7 @@ When importing these workflows, configure the following credentials within n8n:
 - [x] **Error Handling & Resiliency**: Error triggers, webhook alerts, and exception handling.
 - [x] **AI & Autonomous Agents**: LangChain integration, LLM tool-calling, window memory buffers.
 - [x] **Sub-workflows & Multi-Agent Teams**: Modular orchestration, PostgreSQL state tracking, SDD/DbC agents.
+- [x] **Shift-Left QA & Closed Feedback Loops**: Autonomous QA Gatekeeping, 4-pillar audit, automated revision retry cycles.
 - [ ] **Custom Community Nodes**: Extending n8n capabilities with custom TypeScript nodes.
 
 ---
@@ -113,14 +116,17 @@ n8n-learn/
 ├── projects/
 │   └── software_dev_team/                           # Autonomous Software Development Squad
 │       ├── ADMIN.json                               # Tech Lead & SDD Specification generator
+│       ├── TESTEADOR_1.json                         # Shift-Left QA Architect & Gatekeeper workflow
 │       ├── README.md                                # Project guide & setup instructions
 │       ├── schema.sql                               # PostgreSQL tables & trigger definitions
 │       ├── docs/
 │       │   └── pipeline_architecture.md             # Mermaid diagrams & agent state machine
 │       ├── prompts/
-│       │   └── tech_lead_system_prompt.md           # System prompt for Tech Lead agent
+│       │   ├── tech_lead_system_prompt.md           # System prompt for Tech Lead agent
+│       │   └── qa_architect_system_prompt.md        # System prompt for QA Gatekeeper agent
 │       └── specs/
-│           └── sdd_template.json                    # Formal SDD contract template
+│           ├── sdd_template.json                    # Formal SDD contract template
+│           └── qa_report_template.json              # Formal QA audit report template
 ├── Generating Reports.json                          # Customer report generation workflow
 ├── Merging Data.json                                # Multi-source data merging workflow
 ├── Monitor Report Errors.json                       # Global error monitoring & Discord alerts
@@ -128,4 +134,5 @@ n8n-learn/
 ├── Nathan's Workflow.json                           # Order upsert & warehouse workflow
 ├── Section 2 - Sales Data Pipeline.json             # Sales ETL pipeline & CSV report generator
 └── README.md                                        # Project documentation & workflows guide
+```
 ```
