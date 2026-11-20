@@ -1,0 +1,20 @@
+{
+  "aprobado": true,
+  "puntuacion_calidad": 88,
+  "veredicto": "APROBADO_CON_OBSERVACIONES",
+  "resumen_auditoria": "La especificación técnica presenta una sólida base con modelado BDD y contratos explícitos. Los invariantes de datos y aislamiento transaccional están correctamente formalizados.",
+  "analisis_pilares": {
+    "invariantes": "Invariantes financieras y de inventario robustas. Se exige persistencia ACID y rechazo estricto ante saldos negativos.",
+    "comportamiento_bdd": "Buena cobertura del camino feliz y caminos de falla por stock insuficiente. Se recomienda ampliar casos de timeout en pasarela de pagos.",
+    "requisitos": "Requisitos no funcionales con métricas claras (p95 < 250ms). Se especificaron protocolos seguros TLS 1.3.",
+    "criterios_aceptacion": "Criterios binarios y evaluables por suite de pruebas automatizadas (>85% cobertura de código y SAST limpio)."
+  },
+  "contradicciones_detectadas": [],
+  "riesgos_criticos": [
+    "Posible condición de carrera en picos extremos si no se implementa bloqueo pesimista o transacciones con nivel de aislamiento SERIALIZABLE."
+  ],
+  "recomendaciones_obligatorias": [
+    "Incorporar política de reintentos con backoff exponencial para webhooks de pago no confirmados.",
+    "Definir política explícita de rate limiting (máximo 100 req/min por IP en endpoint de checkout)."
+  ]
+}
